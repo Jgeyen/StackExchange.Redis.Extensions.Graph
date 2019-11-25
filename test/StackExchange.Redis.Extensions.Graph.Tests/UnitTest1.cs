@@ -1,63 +1,82 @@
 using NUnit.Framework;
-namespace StackExchange.Redis.Extensions.Graph.Tests
-{
-    public class Tests
-    {
+namespace StackExchange.Redis.Extensions.Graph.Tests {
+    public class Tests {
         IDatabase db;
+
         [SetUp]
-        public void Setup()
-        {
+        public void Setup() {
             db = ConnectionMultiplexer.Connect("localhost").GetDatabase();
         }
 
         [Test]
-        public void CreateNodeReturnsCorrectNodeCreatedResults()
-        {
+        public void CreateNodeReturnsCorrectNodeCreatedResults() {
             var result = db.Query("jasonfun", "CREATE (:person{name:'roi',age:32})");
 
-            Assert.AreEqual(result.Stats.NodesCreated, 1);
-            Assert.AreEqual(result.Stats.PropertiesSet, 2);
+            Assert.AreEqual(1, result.Stats.NodesCreated);
+            Assert.AreEqual(2, result.Stats.PropertiesSet);
         }
         [Test]
-        public void CreateNodeAndRelationshipReturnsCorrectResults()
-        {
+        public void CreateNodeAndRelationshipReturnsCorrectResults() {
             var result = db.Query("jasonfun", "CREATE (:plant {name: 'Tree'})-[:GROWS {season: 'Autumn'}]->(:fruit {name: 'Apple'})");
 
-            Assert.AreEqual(result.Stats.NodesCreated, 2);
-            Assert.AreEqual(result.Stats.PropertiesSet, 3);
-            Assert.AreEqual(result.Stats.RelationshipsCreated, 1);
+            Assert.AreEqual(2, result.Stats.NodesCreated);
+            Assert.AreEqual(3, result.Stats.PropertiesSet);
+            Assert.AreEqual(1, result.Stats.RelationshipsCreated);
         }
 
         [Test]
-        public void CreateNodeWithParamsReturnsCorrectResults()
-        {
+        public void CreateNodeWithParamsReturnsCorrectResults() {
             var name = "amit";
             var age = 30;
             var result = db.Query("jasonfun", "CREATE (:person{{name:'{0}',age:{1}}})", name, age);
 
-            Assert.AreEqual(result.Stats.NodesCreated, 1);
-            Assert.AreEqual(result.Stats.PropertiesSet, 2);
+            Assert.AreEqual(1, result.Stats.NodesCreated);
+            Assert.AreEqual(2, result.Stats.PropertiesSet);
         }
         [Test]
-        public void QueryReturnsCorrectResults()
-        {
+        public void QueryReturnsCorrectHeader() {
             var result = db.Query("jasonfun", "CREATE (:plant {name: 'Tree'})-[:GROWS {season: 'Autumn'}]->(:fruit {name: 'Apple'})");
 
-            result = db.Query("jasonfun", "MATCH (a)-[e]->(b) RETURN a, e, b, b.name");
+            result = db.Query("jasonfun", "MATCH (a)-[e]->(b) RETURN a, e, b.name");
 
-            Assert.AreEqual(result.Header[0].columnType, ColumnType.COLUMN_NODE);
-            Assert.AreEqual(result.Header[1].columnType, ColumnType.COLUMN_RELATION);
-            Assert.AreEqual(result.Header[2].columnType, ColumnType.COLUMN_NODE);
-            Assert.AreEqual(result.Header[3].columnType, ColumnType.COLUMN_SCALAR);
-            Assert.AreEqual(result.Header[0].Name, "a");
-            Assert.AreEqual(result.Header[1].Name, "e");
-            Assert.AreEqual(result.Header[2].Name, "b");
-            Assert.AreEqual(result.Header[3].Name, "b.name");
+            Assert.AreEqual(ColumnType.COLUMN_NODE, result.Header[0].columnType);
+            Assert.AreEqual(ColumnType.COLUMN_RELATION, result.Header[1].columnType);
+            Assert.AreEqual(ColumnType.COLUMN_SCALAR, result.Header[2].columnType);
+            Assert.AreEqual("a", result.Header[0].Name);
+            Assert.AreEqual("e", result.Header[1].Name);
+            Assert.AreEqual("b.name", result.Header[2].Name);
+        }
+        [Test]
+        public void QueryReturnsCorrectNode() {
+            var result = db.Query("jasonfun", "CREATE (:plant {name: 'Tree'})-[:GROWS {season: 'Autumn'}]->(:fruit {name: 'Apple'})");
 
-            var rowNode = new Node(result[0][0]);
-            var rowRel = new Edge(result[0][1]);
-            var rowNode12 = new Node(result[0][2]);
-            var rowScalar = new GraphResultScalar(result[0][3]);
+            result = db.Query("jasonfun", "MATCH (a)-[e]->(b) RETURN a, e, b.name");
+
+            var treeNode = new Node(result[0][0]);
+            Assert.AreEqual("plant", treeNode.Labels[0]);
+            Assert.AreEqual("Tree", treeNode.Property<string>("name"));
+
+        }
+        [Test]
+        public void QueryReturnsCorrectEdge() {
+            var result = db.Query("jasonfun", "CREATE (:plant {name: 'Tree'})-[:GROWS {season: 'Autumn'}]->(:fruit {name: 'Apple'})");
+
+            result = db.Query("jasonfun", "MATCH (a)-[e]->(b) RETURN a, e, b.name");
+
+            var relation = new Edge(result[0][1]);
+
+            Assert.AreEqual("GROWS", relation.RelationshipType.ToUpper());
+            Assert.AreEqual("Autumn", relation.Property<string>("season"));
+
+        }
+        [Test]
+        public void QueryReturnsCorrectScalar() {
+            var result = db.Query("jasonfun", "CREATE (:plant {name: 'Tree'})-[:GROWS {season: 'Autumn'}]->(:fruit {name: 'Apple'})");
+
+            result = db.Query("jasonfun", "MATCH (a)-[e]->(b) RETURN a, e, b.name");
+
+            var scalar = new GraphResultScalar(result[0][2]);
+            Assert.AreEqual("Apple", scalar.Value.ToString());
 
         }
     }

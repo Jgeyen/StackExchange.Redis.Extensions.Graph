@@ -1,7 +1,5 @@
-namespace StackExchange.Redis.Extensions.Graph
-{
-    public enum PropertyType
-    {
+namespace StackExchange.Redis.Extensions.Graph {
+    public enum PropertyType {
         PROPERTY_UNKNOWN = 0,
         PROPERTY_NULL = 1,
         PROPERTY_STRING = 2,
@@ -10,12 +8,10 @@ namespace StackExchange.Redis.Extensions.Graph
         PROPERTY_DOUBLE = 5,
     }
 
-    public sealed class GraphResultNodeProperty:GraphResultScalar
-    {
+    public sealed class GraphResultNodeProperty : GraphResultScalar {
         public int KeyId { get; private set; }
 
-        internal GraphResultNodeProperty(RedisResult result):base(result)
-        {
+        internal GraphResultNodeProperty(RedisResult result) : base(result) {
             KeyId = (int)((RedisResult[])result)[0];
         }
     }
