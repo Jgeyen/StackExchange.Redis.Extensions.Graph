@@ -7,12 +7,13 @@ namespace StackExchange.Redis.Extensions.Graph
         public PropertyType Type { get; private set; }
         public RedisResult Value { get; private set; }
 
-        internal GraphResultScalar(RedisResult[] result)
+        public GraphResultScalar(RedisResult result)
         {
-            var startIndex = result.Length > 2 ? 1:0;
+            var cell = (RedisResult[])result;
+            var startIndex = cell.Length > 2 ? 1:0;
 
-            Type = (PropertyType)((int)result[startIndex]);
-            Value = result[startIndex+1];
+            Type = (PropertyType)((int)cell[startIndex]);
+            Value = cell[startIndex+1];
         }
     }
 }

@@ -4,33 +4,28 @@ namespace StackExchange.Redis.Extensions.Graph
 {
     public sealed class GraphResult
     {
-        private readonly Dictionary<string, RedisValue>[] _results;
+        private readonly RedisResult[] _results;
 
         public GraphResultStats Stats { get; private set; }
 
         public GraphResultHeader Header { get; private set; }
 
-        internal GraphResult(RedisResult result, GraphCache cache)
+        internal GraphResult(RedisResult result)
         {
-            var _results = (RedisResult[])result;
-            Stats = new GraphResultStats(_results);
+            var results = (RedisResult[])result;
+            Stats = new GraphResultStats(results);
 
-            if (_results.Length > 1)
+            if (results.Length > 1)
             {
-                Header = new GraphResultHeader(_results);
-
-                var rows = (RedisResult[])_results[1];
-                var firstRow = (RedisResult[])rows[2];
-                var rowNode = new Node((RedisResult[])firstRow[0], cache);
-                var rowRel = new Edge((RedisResult[])firstRow[1]);
-                var rowScalar = new GraphResultScalar((RedisResult[])firstRow[2]);
+                Header = new GraphResultHeader(results);
+                _results = (RedisResult[])results[1];
             }
         }
 
-        public IReadOnlyList<Dictionary<string, RedisValue>> GetResults() => _results;
+        public RedisResult[] GetResults() => _results;
 
-        public Dictionary<string, RedisValue> this[int index]
-            => index >= _results.Length ? null : _results[index];
+        public RedisResult[] this[int index]
+            => index >= _results.Length ? null : (RedisResult[])_results[index];
 
     }
 

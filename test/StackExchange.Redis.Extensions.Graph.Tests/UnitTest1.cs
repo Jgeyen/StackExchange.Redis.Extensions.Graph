@@ -1,6 +1,4 @@
-using System;
 using NUnit.Framework;
-using StackExchange.Redis.Extensions.Graph;
 namespace StackExchange.Redis.Extensions.Graph.Tests
 {
     public class Tests
@@ -43,14 +41,23 @@ namespace StackExchange.Redis.Extensions.Graph.Tests
         [Test]
         public void QueryReturnsCorrectResults()
         {
-            var result = db.Query("jasonfun", "MATCH (a:person)-[r:knows]->(b:person) RETURN a, r, b.name");
+            var result = db.Query("jasonfun", "CREATE (:plant {name: 'Tree'})-[:GROWS {season: 'Autumn'}]->(:fruit {name: 'Apple'})");
+
+            result = db.Query("jasonfun", "MATCH (a)-[e]->(b) RETURN a, e, b, b.name");
 
             Assert.AreEqual(result.Header[0].columnType, ColumnType.COLUMN_NODE);
             Assert.AreEqual(result.Header[1].columnType, ColumnType.COLUMN_RELATION);
-            Assert.AreEqual(result.Header[2].columnType, ColumnType.COLUMN_SCALAR);
+            Assert.AreEqual(result.Header[2].columnType, ColumnType.COLUMN_NODE);
+            Assert.AreEqual(result.Header[3].columnType, ColumnType.COLUMN_SCALAR);
             Assert.AreEqual(result.Header[0].Name, "a");
-            Assert.AreEqual(result.Header[1].Name, "r");
-            Assert.AreEqual(result.Header[2].Name, "b.name");
+            Assert.AreEqual(result.Header[1].Name, "e");
+            Assert.AreEqual(result.Header[2].Name, "b");
+            Assert.AreEqual(result.Header[3].Name, "b.name");
+
+            var rowNode = new Node(result[0][0]);
+            var rowRel = new Edge(result[0][1]);
+            var rowNode12 = new Node(result[0][2]);
+            var rowScalar = new GraphResultScalar(result[0][3]);
 
         }
     }

@@ -9,15 +9,17 @@ namespace StackExchange.Redis.Extensions.Graph
         public string[] Labels { get; private set; }
         public GraphResultNodeProperty[] Properties { get; private set; }
 
-        internal Node(RedisResult[] results)
+        public Node(RedisResult result)
         {
-            NodeId = (int)results[0];
+            var cell = (RedisResult[])result;
 
-            var labelIds = (RedisResult[])results[1];
+            NodeId = (int)cell[0];
+
+            var labelIds = (RedisResult[])cell[1];
             Labels = labelIds.Select(id => GraphCache.Label((int)id)).ToArray();
 
-            var properties = (RedisResult[])results[2];
-            Properties = properties.Select(prop => new GraphResultNodeProperty((RedisResult[])prop)).ToArray();
+            var properties = (RedisResult[])cell[2];
+            Properties = properties.Select(prop => new GraphResultNodeProperty(prop)).ToArray();
         }
     }
 }

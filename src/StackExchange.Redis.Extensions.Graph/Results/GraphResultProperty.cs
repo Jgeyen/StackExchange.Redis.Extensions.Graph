@@ -14,9 +14,9 @@ namespace StackExchange.Redis.Extensions.Graph
     {
         public int KeyId { get; private set; }
 
-        internal GraphResultNodeProperty(RedisResult[] result):base(result)
+        internal GraphResultNodeProperty(RedisResult result):base(result)
         {
-            KeyId = (int)result[0];
+            KeyId = (int)((RedisResult[])result)[0];
         }
     }
 }

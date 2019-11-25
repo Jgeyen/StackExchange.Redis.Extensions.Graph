@@ -58,7 +58,8 @@ namespace StackExchange.Redis.Extensions.Graph
         }
         private string ExtractNumber(string result)
         {
-            return Regex.Match(result, @"\d+").Value; //todo: assess situation where it doesn't find number?
+            var value = Regex.Match(result, @"([0-9]*[.])?[0-9]+").Value;
+            return value; //todo: assess situation where it doesn't find number?
         }
     }
 }
